@@ -9,16 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CoffeeShopOrderController {
-
     @Autowired
     private ServiceBusSenderAsyncClient queueSender;
-
+    private int sentMessages;
     @PostMapping(value = "/sendOrder")
     public String sendOrder(@RequestBody String order) {
 
         ServiceBusMessage message =  new ServiceBusMessage(order);
         queueSender.sendMessage(message).block();
-        System.out.println("Message sent : " + message.getBody().toString());
-        return "one message sent.";
+        System.out.println((sentMessages++) + ". Message sent: " + message.getBody().toString());
+        return "Total sent messages: " + (sentMessages) ;
     }
 }

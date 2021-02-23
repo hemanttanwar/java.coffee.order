@@ -18,10 +18,6 @@ public class ServiceBusConfiguration {
     @Bean
     public ServiceBusSenderAsyncClient queueSender() {
 
-        System.out.printf("ServiceBusConfiguration properties :%s", properties );
-        System.out.printf("ServiceBusConfiguration properties connection string :%s", properties.getConnection() );
-        System.out.printf("ServiceBusConfiguration properties queue name :%s", properties.getQueue() );
-
         return new ServiceBusClientBuilder()
                 .connectionString(properties.getConnection())
                 .sender()

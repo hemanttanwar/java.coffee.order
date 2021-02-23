@@ -54,7 +54,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-
+				<configuration>
+				<environmentVariables>
+					<AZURE_LOG_LEVEL>verbose</AZURE_LOG_LEVEL>
+				</environmentVariables>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
