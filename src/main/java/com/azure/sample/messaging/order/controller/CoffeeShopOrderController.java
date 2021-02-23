@@ -11,13 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class CoffeeShopOrderController {
     @Autowired
     private ServiceBusSenderAsyncClient queueSender;
-    private int sentMessages;
+    private int sentMessagesTotal;
+
     @PostMapping(value = "/sendOrder")
     public String sendOrder(@RequestBody String order) {
 
         ServiceBusMessage message =  new ServiceBusMessage(order);
         queueSender.sendMessage(message).block();
-        System.out.println((sentMessages++) + ". Message sent: " + message.getBody().toString());
-        return "Total sent messages: " + (sentMessages) ;
+        System.out.println((++sentMessagesTotal) + ". Message sent: " + message.getBody().toString());
+        return "Total sent messages: " + (sentMessagesTotal) ;
     }
 }
