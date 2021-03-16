@@ -2,9 +2,13 @@ package com.azure.sample.messaging.order.config;
 
 import com.azure.messaging.servicebus.ServiceBusClientBuilder;
 import com.azure.messaging.servicebus.ServiceBusSenderAsyncClient;
+import com.azure.sample.messaging.order.controller.CoffeeShopOrderController;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +20,7 @@ import com.azure.core.serializer.json.jackson.JacksonJsonSerializer;
 @Configuration
 @EnableConfigurationProperties(ServiceBusProperties.class)
 public class ServiceBusConfiguration {
+    Logger logger = LoggerFactory.getLogger(ServiceBusConfiguration.class);
     private ServiceBusProperties properties;
 
     public ServiceBusConfiguration(ServiceBusProperties properties) {
@@ -39,8 +44,9 @@ public class ServiceBusConfiguration {
         ObjectMapper objectMapper = objectMapperBuilder.createXmlMapper(false).build();
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
-        //objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        //objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        logger.info("Before Disable WRITE_DATES_AS_TIMESTAMPS : " + objectMapper.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS));
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        logger.info("After Disable WRITE_DATES_AS_TIMESTAMPS : " + objectMapper.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS));
         return objectMapper;
     }
 
