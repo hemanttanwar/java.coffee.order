@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 
@@ -30,17 +31,18 @@ public class CoffeeShopOrderController {
     public String sendOrder(@RequestBody String order) {
 
         ServiceBusMessage message =  new ServiceBusMessage(order);
-        queueSender.sendMessage(message) .subscribe(
-                sentSignal ->  System.out.println("Sent Message to Topic"),
-                errorSignal ->  System.out.println("Error  signal "+ errorSignal));
+        var sendOperation = queueSender.sendMessage(message).then(Mono.fromCallable(() -> {
+            System.out.println("Sent Message to Topic");
+            System.out.println((++sentMessagesTotal) + ". Message sent: " + message.getBody().toString());
+            return "Total sent messages: " + (sentMessagesTotal);
+        }).onErrorResume(error -> Mono.just("Error signal "+ error)));
 
-        System.out.println((++sentMessagesTotal) + ". Message sent: " + message.getBody().toString());
-        return "Total sent messages: " + (sentMessagesTotal) ;
+        return sendOperation.block();
     }
 
     /**
      * Uses custom serializer to create json payload from a `Order` object.
-     * @param order
+     * @param order to send.
      * @return
      */
     @PostMapping(value = "/sendOrderCustomSerializer")
@@ -48,13 +50,15 @@ public class CoffeeShopOrderController {
         Order myOrder =  new Order();
         myOrder.setOrderDetail(order);
         myOrder.setOrderDateTime(OffsetDateTime.now());
-        BinaryData payload =  BinaryData.fromObject(myOrder,jacksonJsonSerializer );
+        BinaryData payload =  BinaryData.fromObject(myOrder, jacksonJsonSerializer );
         ServiceBusMessage message =  new ServiceBusMessage(payload);
-        queueSender.sendMessage(message) .subscribe(
-                sentSignal ->  System.out.println("Sent Message to Topic"),
-                errorSignal ->  System.out.println("Error  signal "+ errorSignal));
 
-        logger.debug((++sentMessagesTotal) + ". Message sent: " + message.getBody().toString());
-        return "Total sent messages: " + (sentMessagesTotal) ;
+        var sendOperation = queueSender.sendMessage(message).then(Mono.fromCallable(() -> {
+            System.out.println("Sent Message to Topic");
+            System.out.println((++sentMessagesTotal) + ". Message sent: " + message.getBody().toString());
+            return "Total sent messages: " + (sentMessagesTotal);
+        }).onErrorResume(error -> Mono.just("Error signal "+ error)));
+
+        return sendOperation.block();
     }
 }
